@@ -22,8 +22,17 @@ import ca.mcgill.ecse321.sportCenterRegistration.dto.ShiftDto;
 import ca.mcgill.ecse321.sportCenterRegistration.model.Shift;
 import ca.mcgill.ecse321.sportCenterRegistration.model.Staff;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @CrossOrigin(origins = "*")
 @RestController
+@Tag(name = "Shift Management", description = "Operations for managing instructor shifts")
 public class ShiftRestController {
     @Autowired
     private ShiftService shiftService;
@@ -40,11 +49,20 @@ public class ShiftRestController {
      */
 
     @PostMapping(value={"/shift/{staff}", "/shift/{staff}/"})
-    public ShiftDto createShift(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME, pattern = "HH:mm") LocalTime startTime,
-    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME, pattern = "HH:mm") LocalTime endTime,
-    @RequestParam Date date,
-    @PathVariable("staff") Staff staff) 
-    throws IllegalArgumentException{
+    @Operation(summary = "Create a new shift", description = "Creates a new shift for a staff member")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Shift created successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = ShiftDto.class)) }),
+        @ApiResponse(responseCode = "400", description = "Failed to create shift", 
+                    content = @Content)
+    })
+    public ShiftDto createShift(
+            @Parameter(description = "Start time of the shift (HH:mm)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME, pattern = "HH:mm") LocalTime startTime,
+            @Parameter(description = "End time of the shift (HH:mm)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME, pattern = "HH:mm") LocalTime endTime,
+            @Parameter(description = "Date of the shift") @RequestParam Date date,
+            @Parameter(description = "Staff member for the shift") @PathVariable("staff") Staff staff) 
+            throws IllegalArgumentException {
         Shift shift = shiftService.createShift(Time.valueOf(startTime), Time.valueOf(endTime), date, staff);
         return convertToDto(shift);
     }
@@ -58,7 +76,17 @@ public class ShiftRestController {
      */
 
     @GetMapping(value={"/shift/{date}", "/shift/{date}/"})
-    public List<ShiftDto> getShiftByDay(@PathVariable("date") Date date) throws IllegalArgumentException{
+    @Operation(summary = "Get shifts by date", description = "Retrieves all shifts scheduled for a specific date")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Shifts retrieved successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = ShiftDto.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error retrieving shifts", 
+                    content = @Content)
+    })
+    public List<ShiftDto> getShiftByDay(
+            @Parameter(description = "Date to filter shifts by") @PathVariable("date") Date date) 
+            throws IllegalArgumentException {
         ArrayList <ShiftDto> shiftDtos = new ArrayList<>();
         for (var shift: shiftService.getShiftByDate(date)){
             shiftDtos.add(convertToDto(shift));
@@ -75,7 +103,17 @@ public class ShiftRestController {
      */
 
     @GetMapping(value={"/shift/{staff}", "/shift/{staff}/"})
-    public List<ShiftDto> getShiftByStaff(@PathVariable("staff") Staff staff) throws IllegalArgumentException{
+    @Operation(summary = "Get shifts by staff", description = "Retrieves all shifts assigned to a specific staff member")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Shifts retrieved successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = ShiftDto.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error retrieving shifts", 
+                    content = @Content)
+    })
+    public List<ShiftDto> getShiftByStaff(
+            @Parameter(description = "Staff member to filter shifts by") @PathVariable("staff") Staff staff) 
+            throws IllegalArgumentException {
         ArrayList <ShiftDto> shiftDtos = new ArrayList<>();
         for (var shift: shiftService.getShiftByStaff(staff)){
             shiftDtos.add(convertToDto(shift));
@@ -93,8 +131,18 @@ public class ShiftRestController {
      */
 
     @GetMapping(value={"/shift/{staff}/{date}", "/shift/{staff}/{date}/"})
-    public List<ShiftDto> getShiftByStaffAndDate(@PathVariable("staff") Staff staff, 
-    @PathVariable("date") Date date) throws IllegalArgumentException{
+    @Operation(summary = "Get shifts by staff and date", description = "Retrieves shifts for a specific staff member on a specific date")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Shifts retrieved successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = ShiftDto.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error retrieving shifts", 
+                    content = @Content)
+    })
+    public List<ShiftDto> getShiftByStaffAndDate(
+            @Parameter(description = "Staff member to filter shifts by") @PathVariable("staff") Staff staff, 
+            @Parameter(description = "Date to filter shifts by") @PathVariable("date") Date date) 
+            throws IllegalArgumentException {
         ArrayList <ShiftDto> shiftDtos = new ArrayList<>();
         for (var shift: shiftService.getShiftByStaffandDate(staff, date)){
             shiftDtos.add(convertToDto(shift));
@@ -110,6 +158,14 @@ public class ShiftRestController {
      */
 
     @GetMapping(value={"/shift", "/shift/"})
+    @Operation(summary = "Get all shifts", description = "Retrieves all shifts in the system")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Shifts retrieved successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = ShiftDto.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error retrieving shifts", 
+                    content = @Content)
+    })
     public List<ShiftDto> getAllShifts() throws IllegalArgumentException{
         ArrayList <ShiftDto> shiftDtos = new ArrayList<>();
         for (var shift: shiftService.getAllShift()){
@@ -127,7 +183,17 @@ public class ShiftRestController {
      */
 
      @GetMapping(value={"/shift/{id}", "/shift/{id}/"})
-     public ShiftDto getShiftById(@PathVariable("id") Integer id) throws IllegalArgumentException{
+     @Operation(summary = "Get shift by ID", description = "Retrieves a specific shift by its ID")
+     @ApiResponses(value = {
+         @ApiResponse(responseCode = "200", description = "Shift retrieved successfully", 
+                     content = { @Content(mediaType = "application/json", 
+                                 schema = @Schema(implementation = ShiftDto.class)) }),
+         @ApiResponse(responseCode = "400", description = "Error retrieving shift", 
+                     content = @Content)
+     })
+     public ShiftDto getShiftById(
+             @Parameter(description = "ID of the shift to retrieve") @PathVariable("id") Integer id) 
+             throws IllegalArgumentException {
          Shift shift= shiftService.getShiftById(id);
          return convertToDto(shift);
      }    
@@ -145,10 +211,20 @@ public class ShiftRestController {
      */
 
     @PutMapping(value={"/shift", "/shift/"})
-    public ShiftDto updateShiftById(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME, pattern = "HH:mm") LocalTime startTime,
-    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME, pattern = "HH:mm") LocalTime endTime,
-    @RequestParam Date date,
-    @RequestParam Staff staff, @RequestParam Integer id) throws IllegalArgumentException{
+    @Operation(summary = "Update a shift", description = "Updates an existing shift with new details")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Shift updated successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = ShiftDto.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error updating shift", 
+                    content = @Content)
+    })
+    public ShiftDto updateShiftById(
+            @Parameter(description = "New start time of the shift (HH:mm)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME, pattern = "HH:mm") LocalTime startTime,
+            @Parameter(description = "New end time of the shift (HH:mm)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME, pattern = "HH:mm") LocalTime endTime,
+            @Parameter(description = "New date of the shift") @RequestParam Date date,
+            @Parameter(description = "New staff member for the shift") @RequestParam Staff staff, 
+            @Parameter(description = "ID of the shift to update") @RequestParam Integer id) throws IllegalArgumentException{
         return convertToDto(shiftService.updateShift(date, Time.valueOf(startTime), Time.valueOf(endTime), staff, id));
     }
 
@@ -161,7 +237,15 @@ public class ShiftRestController {
      */
 
     @DeleteMapping(value={"/shift", "/shift/"})
-    public boolean deleteShiftById(@RequestParam Integer id){
+    @Operation(summary = "Delete a shift", description = "Deletes a shift by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Shift deleted successfully", 
+                    content = @Content),
+        @ApiResponse(responseCode = "400", description = "Error deleting shift", 
+                    content = @Content)
+    })
+    public boolean deleteShiftById(
+            @Parameter(description = "ID of the shift to delete") @RequestParam Integer id) {
         return shiftService.deleteShiftById(id);
     }
 

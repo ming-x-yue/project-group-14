@@ -24,8 +24,17 @@ import ca.mcgill.ecse321.sportCenterRegistration.dto.*;
 import ca.mcgill.ecse321.sportCenterRegistration.model.*;
 import ca.mcgill.ecse321.sportCenterRegistration.service.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @CrossOrigin(origins = "*")
+@Tag(name = "Session Management", description = "Operations for managing sessions")
 public class SessionController {
 
 	@Autowired
@@ -40,9 +49,17 @@ public class SessionController {
 	 * This method gets all session
 	 */
 	@GetMapping(value = { "/view_sessions", "/view_sessions/" })
+	@Operation(summary = "Get sessions", description = "Retrieves sessions filtered by ID or sport class name")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Sessions retrieved successfully", 
+					content = { @Content(mediaType = "application/json", 
+								schema = @Schema(implementation = SessionDTO.class)) }),
+		@ApiResponse(responseCode = "404", description = "No sessions found", 
+					content = @Content)
+	})
 	public ResponseEntity<?> getSessions(
-			@RequestParam(value = "sessionId", required = false) String sessionId,
-			@RequestParam(value = "sportclassName", required = false) String sportclassName)
+			@Parameter(description = "ID of the session to retrieve") @RequestParam(value = "sessionId", required = false) String sessionId,
+			@Parameter(description = "Name of the sport class to filter by") @RequestParam(value = "sportclassName", required = false) String sportclassName)
 			throws IllegalArgumentException {
 		if (sessionId == null && sportclassName == null) {
 			return ResponseEntity.ok(SessionService.getAllSession().stream().map(session -> convertToDTO(session))
@@ -96,13 +113,21 @@ public class SessionController {
 	 * This method creates a daily schedule
 	 */
 	@PostMapping(value = { "/create_session", "/create_session/" })
+	@Operation(summary = "Create a new session", description = "Creates a new session for a sport class with an instructor")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Session created successfully", 
+					content = { @Content(mediaType = "application/json", 
+								schema = @Schema(implementation = SessionDTO.class)) }),
+		@ApiResponse(responseCode = "500", description = "Failed to create session", 
+					content = @Content)
+	})
 	public ResponseEntity<?> createSession(
-			@RequestParam("startTime") String startTime,
-			@RequestParam("endTime") String endTime,
-			@RequestParam("location") String location,
-			@RequestParam("date") String date,
-			@RequestParam("instructorName") String instructorName,
-			@RequestParam("sportclassName") String sportclassName) {
+			@Parameter(description = "Start time of the session (HH:mm)") @RequestParam("startTime") String startTime,
+			@Parameter(description = "End time of the session (HH:mm)") @RequestParam("endTime") String endTime,
+			@Parameter(description = "Location where the session will be held") @RequestParam("location") String location,
+			@Parameter(description = "Date of the session (YYYY-MM-DD)") @RequestParam("date") String date,
+			@Parameter(description = "Username of the instructor") @RequestParam("instructorName") String instructorName,
+			@Parameter(description = "Name of the sport class") @RequestParam("sportclassName") String sportclassName) {
 
 		Session session = null;
 
@@ -119,12 +144,21 @@ public class SessionController {
 	}
 
 	@PutMapping(value = { "/update_session/{sessionId}", "/update_session/{sessionId}/" })
-	public ResponseEntity<?> updateSession(@PathVariable("sessionId") String Id,
-			@RequestParam(value = "startTime", required = false) String startTime,
-			@RequestParam(value = "endTime", required = false) String endTime,
-			@RequestParam(value = "location", required = false) String location,
-			@RequestParam(value = "date", required = false) String date,
-			@RequestParam(value = "instructorName", required = false) String instructorName) {
+	@Operation(summary = "Update session details", description = "Updates an existing session with new details")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Session updated successfully", 
+					content = { @Content(mediaType = "application/json", 
+								schema = @Schema(implementation = SessionDTO.class)) }),
+		@ApiResponse(responseCode = "500", description = "Failed to update session", 
+					content = @Content)
+	})
+	public ResponseEntity<?> updateSession(
+			@Parameter(description = "ID of the session to update") @PathVariable("sessionId") String Id,
+			@Parameter(description = "New start time (HH:mm)") @RequestParam(value = "startTime", required = false) String startTime,
+			@Parameter(description = "New end time (HH:mm)") @RequestParam(value = "endTime", required = false) String endTime,
+			@Parameter(description = "New location") @RequestParam(value = "location", required = false) String location,
+			@Parameter(description = "New date (YYYY-MM-DD)") @RequestParam(value = "date", required = false) String date,
+			@Parameter(description = "New instructor username") @RequestParam(value = "instructorName", required = false) String instructorName) {
 
 		Session session = SessionService.getSession(Integer.parseInt(Id)).get(0);
 
@@ -157,7 +191,15 @@ public class SessionController {
 	}
 
 	@DeleteMapping(value = { "/delete_session", "/delete_session/" })
-	public boolean deleteSession(@RequestParam("Id") String Id) {
+	@Operation(summary = "Delete a session", description = "Deletes a session by its ID")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Session deleted successfully", 
+					content = @Content),
+		@ApiResponse(responseCode = "400", description = "Error deleting session", 
+					content = @Content)
+	})
+	public boolean deleteSession(
+			@Parameter(description = "ID of the session to delete") @RequestParam("Id") String Id) {
 
 		return SessionService.deleteSession(Integer.parseInt(Id));
 

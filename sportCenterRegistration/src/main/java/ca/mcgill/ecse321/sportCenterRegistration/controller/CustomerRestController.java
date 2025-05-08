@@ -20,8 +20,17 @@ import ca.mcgill.ecse321.sportCenterRegistration.dto.CustomerDTO;
 import ca.mcgill.ecse321.sportCenterRegistration.model.Customer;
 import ca.mcgill.ecse321.sportCenterRegistration.service.CustomerService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @CrossOrigin(origins = "*")
+@Tag(name = "Customer Management", description = "Operations for managing customers")
 public class CustomerRestController {
     @Autowired
     public CustomerService customerService;
@@ -63,10 +72,18 @@ public class CustomerRestController {
      */
 
     @PostMapping(value = { "/customer", "/customer/" })
+    @Operation(summary = "Create a new customer", description = "Creates a new customer with the provided information")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Customer created successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = CustomerDTO.class)) }),
+        @ApiResponse(responseCode = "404", description = "Failed to create customer", 
+                    content = @Content)
+    })
     public ResponseEntity<?> createCustomer(
-            @RequestParam("username") String username,
-            @RequestParam("email") String email,
-            @RequestParam("password") String password)
+            @Parameter(description = "Username for the new customer") @RequestParam("username") String username,
+            @Parameter(description = "Email for the new customer") @RequestParam("email") String email,
+            @Parameter(description = "Password for the new customer") @RequestParam("password") String password)
             throws IllegalArgumentException {
         System.out.println("hh");
         try {
@@ -87,7 +104,17 @@ public class CustomerRestController {
      */
 
     @GetMapping(value = { "/customer/{username}", "/customer/{username}/" })
-    public ResponseEntity<?> getCustomer(@PathVariable("username") String username) throws IllegalArgumentException {
+    @Operation(summary = "Get customer by username", description = "Retrieves a customer by their username")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Customer found", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = CustomerDTO.class)) }),
+        @ApiResponse(responseCode = "400", description = "Invalid username or customer not found", 
+                    content = @Content)
+    })
+    public ResponseEntity<?> getCustomer(
+            @Parameter(description = "Username of the customer to retrieve") @PathVariable("username") String username) 
+            throws IllegalArgumentException {
         try {
             Customer customer = customerService.getCustomer(username);
             return ResponseEntity.ok(convertToDTO(customer));
@@ -98,6 +125,14 @@ public class CustomerRestController {
     }
 
     @GetMapping(value = { "/customer/all", "/customer/all/" })
+    @Operation(summary = "Get all customers", description = "Retrieves all customers in the system")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Customers retrieved successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = CustomerDTO.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error retrieving customers", 
+                    content = @Content)
+    })
     public ResponseEntity<?> getAllCustomers() throws IllegalArgumentException {
         try {
             List<Customer> customers = customerService.getAllCustomers();
@@ -119,7 +154,17 @@ public class CustomerRestController {
      */
 
     @DeleteMapping(value = { "/customer/{username}", "/customer/{username}/" })
-    public ResponseEntity<?> deleteCustomer(@PathVariable("username") String username) throws IllegalArgumentException {
+    @Operation(summary = "Delete a customer", description = "Deletes a customer by their username")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Customer deleted successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = CustomerDTO.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error deleting customer", 
+                    content = @Content)
+    })
+    public ResponseEntity<?> deleteCustomer(
+            @Parameter(description = "Username of the customer to delete") @PathVariable("username") String username) 
+            throws IllegalArgumentException {
         try {
             Customer deleteCustomer = customerService.deleteCustomer(username);
             return ResponseEntity.ok(convertToDTO(deleteCustomer));
@@ -137,9 +182,20 @@ public class CustomerRestController {
 
     @PutMapping(value = { "/customer/update/{oldUsername}/{username}/{email}/{password}",
             "/customer/update/{oldUsername}/{username}/{email}/{password}/" })
-    public ResponseEntity<?> updateCustomer(@PathVariable("oldUsername") String oldUsername,
-            @PathVariable("username") String username, @PathVariable("email") String email,
-            @PathVariable("password") String password) throws IllegalArgumentException {
+    @Operation(summary = "Update customer information", description = "Updates a customer's username, email, and password")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Customer updated successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = CustomerDTO.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error updating customer", 
+                    content = @Content)
+    })
+    public ResponseEntity<?> updateCustomer(
+            @Parameter(description = "Current username of the customer") @PathVariable("oldUsername") String oldUsername,
+            @Parameter(description = "New username for the customer") @PathVariable("username") String username, 
+            @Parameter(description = "New email for the customer") @PathVariable("email") String email,
+            @Parameter(description = "New password for the customer") @PathVariable("password") String password) 
+            throws IllegalArgumentException {
         try {
             Customer customer = customerService.updateCustomer(oldUsername, username, email, password);
             return ResponseEntity.ok(convertToDTO(customer));

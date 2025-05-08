@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,8 +20,17 @@ import ca.mcgill.ecse321.sportCenterRegistration.model.Registration;
 import ca.mcgill.ecse321.sportCenterRegistration.model.Session;
 import ca.mcgill.ecse321.sportCenterRegistration.service.RegistrationService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @CrossOrigin(origins = "*")
 @RestController
+@Tag(name = "Registration Management", description = "Operations for managing registrations")
 public class RegistrationRestController {
     @Autowired
     public RegistrationService registrationService;
@@ -69,28 +77,19 @@ public class RegistrationRestController {
      * 
      * 
      */
-
-    // @PostMapping(value = { "/Registration/{account}/{session}/{date}",
-    // "/Registration/{account}/{session}/{date}/" })
-    // public ResponseEntity<?> createRegistration(@PathVariable("date") Date date,
-    // @PathVariable("account") Account account,
-    // @PathVariable("session") Session session) throws IllegalArgumentException {
-
-    // try {
-    // Registration registration = registrationService.createRegistration(date,
-    // account.getUsername(),
-    // session.getInstructor().getUsername(), session.getSportClass().getName(),
-    // session.getStartTime());
-
-    // return ResponseEntity.ok(convertToDTO(registration));
-    // } catch (Exception e) {
-    // return ResponseEntity.badRequest().body(e.getMessage());
-    // }
-    // }
     @PostMapping(value = { "/registration/{accountName}/{sessionId}", "/registration/{accountName}/{sessionId}/" })
+    @Operation(summary = "Create a new registration", description = "Creates a new registration for a user to a session")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Registration created successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = RegistrationDTO.class)) }),
+        @ApiResponse(responseCode = "400", description = "Failed to create registration", 
+                    content = @Content)
+    })
     public ResponseEntity<?> createRegistration(
-            @PathVariable("accountName") String accountName,
-            @PathVariable("sessionId") String sessionId) throws IllegalArgumentException {
+            @Parameter(description = "Username of the account registering") @PathVariable("accountName") String accountName,
+            @Parameter(description = "ID of the session to register for") @PathVariable("sessionId") String sessionId) 
+            throws IllegalArgumentException {
 
         try {
             Registration registration = registrationService.createRegistration(new Date(System.currentTimeMillis()),
@@ -110,28 +109,18 @@ public class RegistrationRestController {
      * 
      * 
      */
-    // @GetMapping(value = { "/Registration/{account}/{session}",
-    // "/Registration/{account}/{session}/" })
-    // public ResponseEntity<?> getRegistration(@PathVariable("account") Account
-    // account,
-    // @PathVariable("session") Session session)
-    // throws IllegalArgumentException {
-
-    // try {
-    // Registration Registration =
-    // registrationService.getRegistration(account.getUsername(),
-    // session.getStartTime(), session.getInstructor().getUsername(),
-    // session.getSportClass().getName());
-
-    // return ResponseEntity.ok(convertToDTO(Registration));
-    // } catch (IllegalArgumentException e) {
-    // return ResponseEntity.badRequest().body(e.getMessage());
-    // }
-    // }
     @GetMapping(value = { "/registration", "/registration/" })
+    @Operation(summary = "Get registrations", description = "Retrieves registrations filtered by account name and/or session ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Registrations retrieved successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = RegistrationDTO.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error retrieving registrations", 
+                    content = @Content)
+    })
     public ResponseEntity<?> getRegistration(
-            @RequestParam(name = "accountName", required = false) String accountName,
-            @RequestParam(name = "sessionId", required = false) String sessionId)
+            @Parameter(description = "Username of the account to filter by") @RequestParam(name = "accountName", required = false) String accountName,
+            @Parameter(description = "ID of the session to filter by") @RequestParam(name = "sessionId", required = false) String sessionId)
             throws IllegalArgumentException {
 
         try {
@@ -156,7 +145,17 @@ public class RegistrationRestController {
     }
 
     @DeleteMapping(value = { "/registration/{id}", "/registration/{id}/" })
-    public ResponseEntity<?> deleteRegistration(@PathVariable("id") String id) throws IllegalArgumentException {
+    @Operation(summary = "Delete registration by ID", description = "Deletes a registration by its unique ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Registration deleted successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = Registration.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error deleting registration", 
+                    content = @Content)
+    })
+    public ResponseEntity<?> deleteRegistration(
+            @Parameter(description = "ID of the registration to delete") @PathVariable("id") String id) 
+            throws IllegalArgumentException {
         try {
             Registration deleted = registrationService.deleteById(Integer.parseInt(id));
             return ResponseEntity.ok(deleted);
@@ -176,9 +175,17 @@ public class RegistrationRestController {
      * 
      */
     @DeleteMapping(value = { "/registration", "/registration/" })
+    @Operation(summary = "Delete registration by account and session", description = "Deletes a registration by account name and session ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Registration deleted successfully", 
+                    content = { @Content(mediaType = "application/json", 
+                                schema = @Schema(implementation = Registration.class)) }),
+        @ApiResponse(responseCode = "400", description = "Error deleting registration", 
+                    content = @Content)
+    })
     public ResponseEntity<?> deleteRegistration(
-            @RequestParam(name = "accountName", required = true) String accountName,
-            @RequestParam(name = "sessionId", required = true) String sessionId)
+            @Parameter(description = "Username of the account") @RequestParam(name = "accountName", required = true) String accountName,
+            @Parameter(description = "ID of the session") @RequestParam(name = "sessionId", required = true) String sessionId)
             throws IllegalArgumentException {
 
         try {

@@ -17,18 +17,35 @@ import ca.mcgill.ecse321.sportCenterRegistration.model.Instructor;
 import ca.mcgill.ecse321.sportCenterRegistration.model.Owner;
 import ca.mcgill.ecse321.sportCenterRegistration.service.LoginService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @CrossOrigin(origins = "*")
+@Tag(name = "Authentication", description = "Operations for user authentication")
 public class LoginController {
 
 	@Autowired
 	private LoginService loginService;
 
 	@GetMapping(value = { "/login", "/login/" })
+	@Operation(summary = "User login", description = "Authenticates a user by email/username and password")
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200", description = "Login successful", 
+					content = { @Content(mediaType = "application/json", 
+								schema = @Schema(oneOf = {CustomerDTO.class, InstructorDTO.class, OwnerDTO.class})) }),
+		@ApiResponse(responseCode = "500", description = "Login failed", 
+					content = @Content)
+	})
 	public ResponseEntity<?> loginByEmail(
-			@RequestParam(value = "email", required = false) String email,
-			@RequestParam(value = "username", required = false) String username,
-			@RequestParam(value = "password", required = true) String password) {
+			@Parameter(description = "Email of the user") @RequestParam(value = "email", required = false) String email,
+			@Parameter(description = "Username of the user") @RequestParam(value = "username", required = false) String username,
+			@Parameter(description = "Password of the user") @RequestParam(value = "password", required = true) String password) {
 		Account user = null;
 		try {
 			if (email == null && username == null) {
