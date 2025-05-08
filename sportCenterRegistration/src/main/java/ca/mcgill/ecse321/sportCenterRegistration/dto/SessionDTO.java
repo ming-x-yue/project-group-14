@@ -2,6 +2,7 @@ package ca.mcgill.ecse321.sportCenterRegistration.dto;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.util.List;
 
 import ca.mcgill.ecse321.sportCenterRegistration.model.Instructor;
 import ca.mcgill.ecse321.sportCenterRegistration.model.SportClass;
@@ -15,8 +16,13 @@ public class SessionDTO {
 	private Date date;
 	private InstructorDTO instructor;
 	private SportClassDTO sportClass;
+	private List<String> errors;
 
 	public SessionDTO() {
+	}
+
+	public SessionDTO(String error) {
+		this.errors = List.of(error);
 	}
 
 	public SessionDTO(Date date, Time startTime, Time endTime, int id, String location, Instructor instructor,
@@ -27,7 +33,7 @@ public class SessionDTO {
 		this.location = location;
 		this.instructor = new InstructorDTO(instructor.getId(), instructor.getUsername(), instructor.getEmail(),
 				instructor.getPassword(), "instructor");
-		this.sportClass = new SportClassDTO(sportClass.getId(), sportClass.getName(), sportClass.getApproved());
+		this.sportClass = new SportClassDTO(sportClass.getName(), sportClass.getApproved());
 		this.id = id;
 	}
 
@@ -57,5 +63,13 @@ public class SessionDTO {
 
 	public SportClassDTO getSportClass() {
 		return sportClass;
+	}
+
+	public List<String> getErrors() {
+		return errors;
+	}
+
+	public void setErrors(List<String> errors) {
+		this.errors = errors;
 	}
 }

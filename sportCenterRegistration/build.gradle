@@ -21,12 +21,17 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-	// API docs
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
-	// See https://springdoc.org/#javadoc-support
-	annotationProcessor 'com.github.therapi:therapi-runtime-javadoc-scribe:0.13.0'
-	implementation 'com.github.therapi:therapi-runtime-javadoc:0.13.0'
+	testImplementation 'org.mockito:mockito-core:5.8.0'
+	testImplementation 'org.mockito:mockito-junit-jupiter:5.8.0'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+	testImplementation 'io.cucumber:cucumber-java:7.14.0'
+	testImplementation 'io.cucumber:cucumber-spring:7.14.0'
+	testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.14.0'
+	testImplementation 'org.junit.platform:junit-platform-suite:1.10.1'
+	testImplementation 'org.junit.platform:junit-platform-console:1.10.1'
+	testImplementation 'org.seleniumhq.selenium:selenium-java:4.16.1'
+	testImplementation 'io.github.bonigarcia:webdrivermanager:5.6.2'
 }
 
 tasks.named('test') {
@@ -39,4 +44,19 @@ tasks.named('test') {
 
 jacocoTestReport {
 	dependsOn test // tests are required to run before generating the report
+}
+
+// Add a custom task to run only Cucumber tests
+task cucumberTests() {
+    dependsOn assemble, testClasses
+    doLast {
+        javaexec {
+            mainClass = "org.junit.platform.console.ConsoleLauncher"
+            classpath = sourceSets.main.runtimeClasspath + sourceSets.test.runtimeClasspath
+            args = ["--include-engine", "cucumber", "--scan-classpath"]
+            systemProperty 'cucumber.junit-platform.naming-strategy', 'long'
+            systemProperty 'cucumber.glue', 'ca.mcgill.ecse321.sportCenterRegistration.steps'
+            systemProperty 'cucumber.plugin', 'pretty'
+        }
+    }
 }

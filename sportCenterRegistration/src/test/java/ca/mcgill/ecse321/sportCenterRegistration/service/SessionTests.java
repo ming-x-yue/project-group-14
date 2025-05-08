@@ -2,7 +2,6 @@ package ca.mcgill.ecse321.sportCenterRegistration.service;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -42,9 +41,8 @@ import ca.mcgill.ecse321.sportCenterRegistration.model.Instructor;
 import ca.mcgill.ecse321.sportCenterRegistration.model.SportClass;
 import ca.mcgill.ecse321.sportCenterRegistration.model.Session;
 
-
 @SpringBootTest
-public class SessionTests{
+public class SessionTests {
     @Mock
     private SessionRepository sessionRepo;
     @Mock
@@ -80,7 +78,7 @@ public class SessionTests{
         lenient().when(sessionRepo.findSessionBySportClass(any(SportClass.class))).thenAnswer(
                 (InvocationOnMock invocation) -> {
                     SportClass sp = (SportClass) invocation.getArgument(0);
-                    if (sp.getName().equals("cardio")){
+                    if (sp.getName().equals("cardio")) {
                         List<Session> sessions = new ArrayList<>();
                         sessions.add(session1);
                         sessions.add(session2);
@@ -88,28 +86,25 @@ public class SessionTests{
                     } else {
                         return null;
                     }
-                }
-        );
+                });
 
         lenient().when(sportClassRepo.findSportClassByName(anyString())).thenAnswer(
-                (InvocationOnMock invocation) ->{
-                    if (invocation.getArgument(0).equals("cardio")){
+                (InvocationOnMock invocation) -> {
+                    if (invocation.getArgument(0).equals("cardio")) {
                         return new SportClass("cardio");
-                    } else{
+                    } else {
                         return null;
                     }
-                }
-        );
+                });
 
         lenient().when(instructorRepo.findInstructorByUsername(anyString())).thenAnswer(
-                (InvocationOnMock invocation) ->{
-                    if (invocation.getArgument(0).equals("Loridy")){
+                (InvocationOnMock invocation) -> {
+                    if (invocation.getArgument(0).equals("Loridy")) {
                         return INSTRUCTOR_0;
-                    } else{
+                    } else {
                         return null;
                     }
-                }
-        );
+                });
 
         lenient().when(sessionRepo.findSessionById(anyInt())).thenAnswer(
                 (InvocationOnMock invocation) -> {
@@ -122,8 +117,7 @@ public class SessionTests{
                     } else {
                         return null;
                     }
-                }
-        );
+                });
 
         lenient().when(sessionRepo.findAll()).thenAnswer(
                 (InvocationOnMock invocation) -> {
@@ -132,15 +126,14 @@ public class SessionTests{
                     sessions.add(session2);
                     sessions.add(session3);
                     return sessions;
-                }
-        );
+                });
 
-        
-        lenient().when(sessionRepo.save(any(Session.class))).thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
+        lenient().when(sessionRepo.save(any(Session.class)))
+                .thenAnswer((InvocationOnMock invocation) -> invocation.getArgument(0));
     }
 
     @Test
-    public void TestCreateSession(){
+    public void TestCreateSession() {
         Time start = Time.valueOf("08:00:00");
         Time end = Time.valueOf("11:00:00");
         String location = "trottbuilding";
@@ -149,9 +142,9 @@ public class SessionTests{
         String sportClass = "cardio";
         Session session = null;
         String error = null;
-        try{
+        try {
             session = sessionService.createSession(start, end, location, date, instructor, sportClass);
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             error = e.getMessage();
         }
 
@@ -166,69 +159,76 @@ public class SessionTests{
     public void testCreateSessionWithNullStartTime() {
         String error = null;
         try {
-            sessionService.createSession(null, Time.valueOf("11:00:00"), "trottbuilding", Date.valueOf("2024-03-03"), "Loridy", "cardio");
+            sessionService.createSession(null, Time.valueOf("11:00:00"), "trottbuilding", Date.valueOf("2024-03-03"),
+                    "Loridy", "cardio");
         } catch (IllegalArgumentException e) {
             error = e.getMessage();
         }
-        assertEquals("Session start time cannot be empty!",error);
+        assertEquals("Session start time cannot be empty!", error);
     }
 
     @Test
     public void testCreateSessionWithNullEndTime() {
         String error = null;
         try {
-            sessionService.createSession(Time.valueOf("08:00:00"), null, "trottbuilding", Date.valueOf("2024-03-03"), "Loridy", "cardio");
+            sessionService.createSession(Time.valueOf("08:00:00"), null, "trottbuilding", Date.valueOf("2024-03-03"),
+                    "Loridy", "cardio");
         } catch (IllegalArgumentException e) {
             error = e.getMessage();
         }
-        assertEquals("Session end time cannot be empty!",error);
+        assertEquals("Session end time cannot be empty!", error);
     }
+
     @Test
     public void testCreateSessionWithNullLocation() {
         String error = null;
         try {
-            sessionService.createSession(Time.valueOf("08:00:00"), Time.valueOf("11:00:00"), null, Date.valueOf("2024-03-03"), "Loridy", "cardio");
+            sessionService.createSession(Time.valueOf("08:00:00"), Time.valueOf("11:00:00"), null,
+                    Date.valueOf("2024-03-03"), "Loridy", "cardio");
         } catch (IllegalArgumentException e) {
             error = e.getMessage();
         }
-        assertEquals("Session location cannot be empty!",error);
+        assertEquals("Session location cannot be empty!", error);
     }
 
     @Test
     public void testCreateSessionWithNullDate() {
         String error = null;
         try {
-            sessionService.createSession(Time.valueOf("08:00:00"), Time.valueOf("11:00:00"), "trottbuilding", null, "Loridy", "cardio");
+            sessionService.createSession(Time.valueOf("08:00:00"), Time.valueOf("11:00:00"), "trottbuilding", null,
+                    "Loridy", "cardio");
         } catch (IllegalArgumentException e) {
             error = e.getMessage();
         }
-        assertEquals("Session date cannot be empty!",error);
+        assertEquals("Session date cannot be empty!", error);
     }
 
     @Test
     public void testCreateSessionWithNullInstructor() {
         String error = null;
         try {
-            sessionService.createSession(Time.valueOf("08:00:00"), Time.valueOf("11:00:00"), "trottbuilding", Date.valueOf("2024-03-03"), null, "cardio");
+            sessionService.createSession(Time.valueOf("08:00:00"), Time.valueOf("11:00:00"), "trottbuilding",
+                    Date.valueOf("2024-03-03"), null, "cardio");
         } catch (IllegalArgumentException e) {
             error = e.getMessage();
         }
-        assertEquals("Session instructor cannot be empty!",error);
+        assertEquals("Session instructor cannot be empty!", error);
     }
 
     @Test
     public void testCreateSessionWithNullSportClass() {
         String error = null;
         try {
-            sessionService.createSession(Time.valueOf("08:00:00"), Time.valueOf("11:00:00"), "trottbuilding", Date.valueOf("2024-03-03"), "Loridy", null);
+            sessionService.createSession(Time.valueOf("08:00:00"), Time.valueOf("11:00:00"), "trottbuilding",
+                    Date.valueOf("2024-03-03"), "Loridy", null);
         } catch (IllegalArgumentException e) {
             error = e.getMessage();
         }
-        assertEquals("Session sport class cannot be empty!",error);
+        assertEquals("Session sport class cannot be empty!", error);
     }
 
     @Test
-    public void testUpdateSession(){
+    public void testUpdateSession() {
         Time start = Time.valueOf("09:00:00");
         Time end = Time.valueOf("12:00:00");
         String location = "testing";
@@ -239,9 +239,9 @@ public class SessionTests{
         Session session = null;
         String error = null;
 
-        try{
+        try {
             session = sessionService.updateSession(1, start, end, location, date, "Test", sportClass);
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             error = e.getMessage();
         }
 
@@ -249,7 +249,7 @@ public class SessionTests{
     }
 
     @Test
-    public void testGetSessionById(){
+    public void testGetSessionById() {
         Time start = Time.valueOf("08:00:00");
         Time end = Time.valueOf("11:00:00");
         String location = "trottbuilding";
@@ -257,10 +257,12 @@ public class SessionTests{
         Instructor instructor = new Instructor("Loridy", "loridy@gmail.com", "loridy123");
         SportClass sportClass = new SportClass("cardio");
 
+        List<Session> sessions = null;
         Session session = null;
-        try{
-            session = sessionService.getSession(1);
-        } catch (IllegalArgumentException e){
+        try {
+            sessions = sessionService.getSession(1);
+            session = sessions.get(0);
+        } catch (IllegalArgumentException e) {
             fail();
         }
 
@@ -272,13 +274,12 @@ public class SessionTests{
         assertEquals(date, session.getDate());
     }
 
-
     @Test
-    public void testGetSessionBySportClass(){
+    public void testGetSessionBySportClass() {
         List<Session> sessions = null;
         try {
             sessions = sessionService.getSessionBySportClass("cardio");
-        } catch (IllegalArgumentException e) { 
+        } catch (IllegalArgumentException e) {
             fail();
         }
 
@@ -286,7 +287,7 @@ public class SessionTests{
     }
 
     @Test
-    public void testGetSessionBySportClassFail(){
+    public void testGetSessionBySportClassFail() {
         List<Session> sessions = null;
         String error = null;
         try {
@@ -299,21 +300,21 @@ public class SessionTests{
     }
 
     @Test
-    public void testDeleteSession(){
-        try{
+    public void testDeleteSession() {
+        try {
             sessionService.deleteSession(1);
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             fail();
         }
         verify(sessionRepo).delete(any());
     }
 
     @Test
-    public void testDeleteNonExistSession(){
+    public void testDeleteNonExistSession() {
         String error = null;
-        try{
+        try {
             sessionService.deleteSession(4); // id 4 is not exist
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             error = e.getMessage();
         }
         assertEquals("Session not found", error);
@@ -321,7 +322,7 @@ public class SessionTests{
     }
 
     @Test
-    public void testGetAllSession(){
+    public void testGetAllSession() {
         List<Session> sessions = null;
         try {
             sessions = sessionService.getAllSession();

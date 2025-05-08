@@ -1,26 +1,31 @@
 package ca.mcgill.ecse321.sportCenterRegistration.dto;
 
 public class SportClassDTO {
-    private int id;
     private String name;
-    private boolean approved;
+    private Boolean approved;
 
-    public SportClassDTO(int id, String name, boolean approved) {
-        this.id = id;
-        this.name = name;
-        this.approved = approved;
+    // Default constructor required for JSON deserialization
+    public SportClassDTO() {
     }
 
-    public int getId() {
-        return id;
+    public SportClassDTO(String name, Boolean approved) {
+        this.name = name;
+        this.approved = approved;
     }
 
     public String getName() {
         return name;
     }
 
-    public boolean getApproved() {
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Boolean getApproved() {
         return approved;
     }
 
+    public void setApproved(Boolean approved) {
+        this.approved = approved;
+    }
 }

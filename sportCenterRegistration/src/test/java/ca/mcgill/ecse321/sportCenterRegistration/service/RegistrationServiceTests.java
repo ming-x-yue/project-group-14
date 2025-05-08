@@ -35,7 +35,6 @@ public class RegistrationServiceTests {
 
 	@Mock
 	private RegistrationRepository registrationRepository;
-	// making them mock so i can save to them without actually saving to the repos
 	@Mock
 	private AccountRepository accountRepository;
 	@Mock
@@ -67,26 +66,18 @@ public class RegistrationServiceTests {
 	private static final String Session_LOCATION = "TestSessionLocation";
 	private static final Date Session_DATE = new Date(1230560800000L);
 	private static final String SportClass_NAME = "TestSportclassName";
+	private static final int SESSION_ID = 1;
 
 	private static final String NONEXISTING_Customer_USERNAME = "NotACustomerUsername";
-	private static final String NONEXISTING_Customer_EMAIL = "NotACustomerEmail";
-	private static final String NONEXISTING_Customer_PASSWORD = "NotACustomerPassword";
 
 	private static final String NONEXISTING_Instructor_USERNAME = "NotAnInstructorUsername";
 	private static final String NONEXISTING_Instructor_EMAIL = "NotAnInstructorEmail";
 	private static final String NONEXISTING_Instructor_PASSWORD = "NotAnInstructorPassword";
 
-	private static final Time NONEXISTING_Session_START = Time.valueOf("15:30:00");
-	private static final String NONEXISTING_SportClass_NAME = "NotASportClassName";
-
 	private static Instructor instructor;
-
-	private static Instructor NONEXISTING_instructor;
 
 	@BeforeEach
 	public void setMockOutput() {
-
-		// Mockito.clearAllCaches();
 		Mockito.reset(registrationRepository);
 		Mockito.reset(accountRepository);
 		Mockito.reset(instructorRepository);
@@ -96,8 +87,6 @@ public class RegistrationServiceTests {
 		Mockito.reset(sportClassRepository);
 
 		instructor = new Instructor(Instructor_USERNAME, Instructor_EMAIL, Instructor_PASSWORD);
-		NONEXISTING_instructor = new Instructor(NONEXISTING_Instructor_USERNAME, NONEXISTING_Instructor_EMAIL,
-				NONEXISTING_Instructor_PASSWORD);
 
 		lenient().when(accountRepository.findAccountByUsername(anyString()))
 				.thenAnswer((InvocationOnMock invocation) -> {
@@ -158,11 +147,8 @@ public class RegistrationServiceTests {
 		}).when(registrationRepository).delete(any(Registration.class));
 	}
 
-	// @SuppressWarnings("null")
 	@Test
 	public void createValidRegistration() {
-		// Set up
-
 		Account customer = new Customer(Customer_USERNAME, Customer_EMAIL, Customer_PASSWORD);
 		Account instructor = new Instructor(Instructor_USERNAME, Instructor_EMAIL, Instructor_PASSWORD);
 		SportClass sportClass = new SportClass(SportClass_NAME);
@@ -173,7 +159,7 @@ public class RegistrationServiceTests {
 		when(registrationRepository.save(any(Registration.class))).thenReturn(registration);
 
 		Registration registrationFromService = registrationService.createRegistration(Registration_DATE,
-				Customer_USERNAME, Instructor_USERNAME, SportClass_NAME, Session_START);
+				Customer_USERNAME, SESSION_ID);
 
 		assertNotNull(registrationFromService);
 		assertEquals((Account) customer, registration.getAccount());
@@ -183,19 +169,10 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void createRegistrationDateNull() {
-		// Set up
-
-		Account customer = new Customer(Customer_USERNAME, Customer_EMAIL, Customer_PASSWORD);
-		Account instructor = new Instructor(Instructor_USERNAME, Instructor_EMAIL, Instructor_PASSWORD);
-		SportClass sportClass = new SportClass(SportClass_NAME);
-		Session session = new Session(Session_START, Session_END, Session_LOCATION, Session_DATE,
-				(Instructor) instructor, sportClass);
 
 		Registration registration = null;
 		try {
-			registration = registrationService.createRegistration(null, Customer_USERNAME, Instructor_USERNAME,
-					SportClass_NAME, Session_START);
-			// doesnt cause an error so it fails
+			registration = registrationService.createRegistration(null, Customer_USERNAME, SESSION_ID);
 			fail("did not throw an error even though date is null");
 		} catch (Exception e) {
 			assertEquals("Date can not be null", e.getMessage());
@@ -205,18 +182,11 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void createRegistrationNoneExistingAccountUsername() {
-		// Set up
-		Account customer = new Customer(Customer_USERNAME, Customer_EMAIL, Customer_PASSWORD);
-		Account instructor = new Instructor(Instructor_USERNAME, Instructor_EMAIL, Instructor_PASSWORD);
-		SportClass sportClass = new SportClass(SportClass_NAME);
-		Session session = new Session(Session_START, Session_END, Session_LOCATION, Session_DATE,
-				(Instructor) instructor, sportClass);
 
 		Registration registration = null;
 		try {
 			registration = registrationService.createRegistration(Registration_DATE, NONEXISTING_Customer_USERNAME,
-					Instructor_USERNAME, SportClass_NAME, Session_START);
-			// doesnt cause an error so it fails
+					SESSION_ID);
 			fail("did not throw an error even though account does not exist");
 		} catch (Exception e) {
 			assertEquals("No account with the given username exists.", e.getMessage());
@@ -226,13 +196,10 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void createRegistrationNoneExistingInstructorUsername() {
-		// Set up
-
 		Registration registration = null;
 		try {
 			registration = registrationService.createRegistration(Registration_DATE, Customer_USERNAME,
-					NONEXISTING_Instructor_USERNAME, SportClass_NAME, Session_START);
-			// doesnt cause an error so it fails
+					SESSION_ID);
 			fail("did not throw an error even though instructor does not exist");
 		} catch (Exception e) {
 			assertEquals("No instructor with the given username exists.", e.getMessage());
@@ -242,13 +209,10 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void createRegistrationInstructorAttemptsToRegisterForHisOwnClass() {
-		// Set up
-
 		Registration registration = null;
 		try {
 			registration = registrationService.createRegistration(Registration_DATE, Instructor_USERNAME,
-					Instructor_USERNAME, SportClass_NAME, Session_START);
-			// doesnt cause an error so it fails
+					SESSION_ID);
 			fail("did not throw an error even though instructor tried to register to their own session");
 		} catch (Exception e) {
 			assertEquals("Instructor can not register to their own session!", e.getMessage());
@@ -258,13 +222,10 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void createRegistrationWithNoneExistingSession() {
-		// Set up
-
 		Registration registration = null;
 		try {
 			registration = registrationService.createRegistration(Registration_DATE, Customer_USERNAME,
-					Instructor_USERNAME, SportClass_NAME, NONEXISTING_Session_START);
-			// doesnt cause an error so it fails
+					SESSION_ID);
 			fail("did not throw an error even though no session existed");
 		} catch (Exception e) {
 			assertEquals("No such session exists.", e.getMessage());
@@ -274,7 +235,6 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void createRegistrationAfterClassEnded() {
-		// Set up
 		Account instructor = new Instructor(Instructor_USERNAME, Instructor_EMAIL, Instructor_PASSWORD);
 		SportClass sportClass = new SportClass(SportClass_NAME);
 		Session alreadyEndedSession = new Session(Session_START, Session_END, Session_LOCATION, new Date(0L),
@@ -285,8 +245,7 @@ public class RegistrationServiceTests {
 		Registration registration = null;
 		try {
 			registration = registrationService.createRegistration(Registration_DATE, Customer_USERNAME,
-					Instructor_USERNAME, SportClass_NAME, NONEXISTING_Session_START);
-			// doesnt cause an error so it fails
+					SESSION_ID);
 			fail("did not throw an error even though session already ended");
 		} catch (Exception e) {
 			assertEquals("Can not register to a class that has already ended.", e.getMessage());
@@ -296,7 +255,6 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void createRegistrationWhenItAlreadyExists() {
-		// Set up
 		Account customer = new Customer(Customer_USERNAME, Customer_EMAIL, Customer_PASSWORD);
 		Account instructor = new Instructor(Instructor_USERNAME, Instructor_EMAIL, Instructor_PASSWORD);
 		SportClass sportClass = new SportClass(SportClass_NAME);
@@ -310,8 +268,7 @@ public class RegistrationServiceTests {
 		Registration registration = null;
 		try {
 			registration = registrationService.createRegistration(Registration_DATE, Customer_USERNAME,
-					Instructor_USERNAME, SportClass_NAME, Session_START);
-			// doesnt cause an error so it fails
+					SESSION_ID);
 			fail("did not throw an error even though no session existed");
 		} catch (Exception e) {
 			assertEquals("Registration already exists.", e.getMessage());
@@ -321,19 +278,9 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void getRegistrationWithNullCustomerUsername() {
-		// Set up
 
-		Account customer = accountRepository.findAccountByUsername(Customer_USERNAME);
-		Account sessionInstructor = instructorRepository.findInstructorByUsername(Instructor_USERNAME);
-		SportClass sportClass = sportClassRepository.findSportClassByName(SportClass_NAME);
-		Session session = sessionRepository.findSessionByStartTimeAndInstructorAndSportClass(Session_START,
-				(Instructor) sessionInstructor, sportClass);
-
-		Registration registration = null;
 		try {
-			registration = registrationService.getRegistration(null, Session_START, instructor.getUsername(),
-					sportClass.getName());
-			// doesnt cause an error
+			registrationService.getRegistrationByAccountAndSession(null, SESSION_ID);
 			fail();
 		} catch (Exception e) {
 			assertEquals("Account username can not be null or empty", e.getMessage());
@@ -342,19 +289,9 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void getRegistrationWithEmptyCustomerUsername() {
-		// Set up
 
-		Account customer = accountRepository.findAccountByUsername(Customer_USERNAME);
-		Account sessionInstructor = instructorRepository.findInstructorByUsername(Instructor_USERNAME);
-		SportClass sportClass = sportClassRepository.findSportClassByName(SportClass_NAME);
-		Session session = sessionRepository.findSessionByStartTimeAndInstructorAndSportClass(Session_START,
-				(Instructor) sessionInstructor, sportClass);
-
-		Registration registration = null;
 		try {
-			registration = registrationService.getRegistration("", Session_START, instructor.getUsername(),
-					sportClass.getName());
-			// doesnt cause an error
+			registrationService.getRegistrationByAccountAndSession("", SESSION_ID);
 			fail();
 		} catch (Exception e) {
 			assertEquals("Account username can not be null or empty", e.getMessage());
@@ -363,19 +300,10 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void getRegistrationWithNullInstructorUsername() {
-		// Set up
-
 		Account customer = accountRepository.findAccountByUsername(Customer_USERNAME);
-		Account sessionInstructor = instructorRepository.findInstructorByUsername(Instructor_USERNAME);
-		SportClass sportClass = sportClassRepository.findSportClassByName(SportClass_NAME);
-		Session session = sessionRepository.findSessionByStartTimeAndInstructorAndSportClass(Session_START,
-				(Instructor) sessionInstructor, sportClass);
 
-		Registration registration = null;
 		try {
-			registration = registrationService.getRegistration(customer.getUsername(), Session_START, null,
-					sportClass.getName());
-			// doesnt cause an error
+			registrationService.getRegistrationByAccountAndSession(customer.getUsername(), SESSION_ID);
 			fail();
 		} catch (Exception e) {
 			assertEquals("Instructor username can not be null or empty", e.getMessage());
@@ -384,19 +312,10 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void getRegistrationWithEmptyInstructorUsername() {
-		// Set up
-
 		Account customer = accountRepository.findAccountByUsername(Customer_USERNAME);
-		Account sessionInstructor = instructorRepository.findInstructorByUsername(Instructor_USERNAME);
-		SportClass sportClass = sportClassRepository.findSportClassByName(SportClass_NAME);
-		Session session = sessionRepository.findSessionByStartTimeAndInstructorAndSportClass(Session_START,
-				(Instructor) sessionInstructor, sportClass);
 
-		Registration registration = null;
 		try {
-			registration = registrationService.getRegistration(customer.getUsername(), Session_START, null,
-					sportClass.getName());
-			// doesnt cause an error
+			registrationService.getRegistrationByAccountAndSession(customer.getUsername(), SESSION_ID);
 			fail();
 		} catch (Exception e) {
 			assertEquals("Instructor username can not be null or empty", e.getMessage());
@@ -405,19 +324,10 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void getRegistrationWithNullSportClassName() {
-		// Set up
-
 		Account customer = accountRepository.findAccountByUsername(Customer_USERNAME);
-		Account sessionInstructor = instructorRepository.findInstructorByUsername(Instructor_USERNAME);
-		SportClass sportClass = sportClassRepository.findSportClassByName(SportClass_NAME);
-		Session session = sessionRepository.findSessionByStartTimeAndInstructorAndSportClass(Session_START,
-				(Instructor) sessionInstructor, sportClass);
 
-		Registration registration = null;
 		try {
-			registration = registrationService.getRegistration(customer.getUsername(), Session_START,
-					instructor.getUsername(), null);
-			// doesnt cause an error
+			registrationService.getRegistrationByAccountAndSession(customer.getUsername(), SESSION_ID);
 			fail();
 		} catch (Exception e) {
 			assertEquals("Sport Class name can not be null or empty", e.getMessage());
@@ -426,19 +336,10 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void getRegistrationWithEmptySportClassName() {
-		// Set up
-
 		Account customer = accountRepository.findAccountByUsername(Customer_USERNAME);
-		Account sessionInstructor = instructorRepository.findInstructorByUsername(Instructor_USERNAME);
-		SportClass sportClass = sportClassRepository.findSportClassByName(SportClass_NAME);
-		Session session = sessionRepository.findSessionByStartTimeAndInstructorAndSportClass(Session_START,
-				(Instructor) sessionInstructor, sportClass);
 
-		Registration registration = null;
 		try {
-			registration = registrationService.getRegistration(customer.getUsername(), Session_START,
-					instructor.getUsername(), "");
-			// doesnt cause an error
+			registrationService.getRegistrationByAccountAndSession(customer.getUsername(), SESSION_ID);
 			fail();
 		} catch (Exception e) {
 			assertEquals("Sport Class name can not be null or empty", e.getMessage());
@@ -447,8 +348,6 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void getValidRegistration() {
-		// Set up
-
 		Account customer = accountRepository.findAccountByUsername(Customer_USERNAME);
 		Account sessionInstructor = instructorRepository.findInstructorByUsername(Instructor_USERNAME);
 		SportClass sportClass = sportClassRepository.findSportClassByName(SportClass_NAME);
@@ -461,8 +360,7 @@ public class RegistrationServiceTests {
 
 		Registration registration = null;
 		try {
-			registration = registrationService.getRegistration(customer.getUsername(), Session_START,
-					instructor.getUsername(), sportClass.getName());
+			registration = registrationService.getRegistrationByAccountAndSession(customer.getUsername(), SESSION_ID);
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
@@ -475,20 +373,8 @@ public class RegistrationServiceTests {
 
 	@Test
 	public void deleteValidRegistration() {
-		// Set up
-		Account customer = new Customer(Customer_USERNAME, Customer_EMAIL, Customer_PASSWORD);
-		Account instructor = new Instructor(Instructor_USERNAME, Instructor_EMAIL, Instructor_PASSWORD);
-		SportClass sportClass = new SportClass(SportClass_NAME);
-		Session session = new Session(Session_START, Session_END, Session_LOCATION, Session_DATE,
-				(Instructor) instructor, sportClass);
-
-		Registration alreadyExistsRegistration = new Registration(Registration_DATE, customer, session);
-		// when(registrationRepository.findRegistrationByAccountAndSession(any(Account.class),
-		// any(Session.class))).thenReturn(alreadyExistsRegistration);
-
 		try {
-			registrationService.deleteRegistration(Customer_USERNAME, Instructor_USERNAME, SportClass_NAME,
-					Session_START);
+			registrationService.deleteRegistrationByAccountAndSessionId(Customer_USERNAME, SESSION_ID);
 		} catch (Exception e) {
 			fail("registration exists so it should be deleted.");
 		}

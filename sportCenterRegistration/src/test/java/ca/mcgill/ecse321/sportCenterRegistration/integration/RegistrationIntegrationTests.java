@@ -65,7 +65,7 @@ public class RegistrationIntegrationTests {
         @Test
         @Order(1)
         public void testCreateValidRegistration() {
-                RegistrationDTO registrationDTO = new RegistrationDTO(VALID_REGISTRATION_DATE, VALID_CUSTOMER,
+                RegistrationDTO registrationDTO = new RegistrationDTO(0, VALID_REGISTRATION_DATE, VALID_CUSTOMER,
                                 VALID_SESSION);
 
                 ResponseEntity<RegistrationDTO> response = client.postForEntity(
@@ -76,8 +76,8 @@ public class RegistrationIntegrationTests {
                 assertEquals(HttpStatus.CREATED, response.getStatusCode());
                 RegistrationDTO createdRegistrationDTO = response.getBody();
                 assertNotNull(createdRegistrationDTO);
-                assertEquals(((CustomerDTO) registrationDTO.getAccount()).getCustomerUsername(),
-                                ((CustomerDTO) createdRegistrationDTO.getAccount()).getCustomerUsername());
+                assertEquals(((CustomerDTO) registrationDTO.getAccount()).getUsername(),
+                                ((CustomerDTO) createdRegistrationDTO.getAccount()).getUsername());
         }
 
         @Test
@@ -91,7 +91,7 @@ public class RegistrationIntegrationTests {
                 assertEquals(HttpStatus.OK, response.getStatusCode());
                 RegistrationDTO registrationDTO = response.getBody();
                 assertNotNull(registrationDTO);
-                assertEquals(VALID_CUSTOMER_NAME, ((CustomerDTO) registrationDTO.getAccount()).getCustomerUsername());
+                assertEquals(VALID_CUSTOMER_NAME, ((CustomerDTO) registrationDTO.getAccount()).getUsername());
                 assertEquals(VALID_SPORT_CLASS_NAME, (registrationDTO.getSession()).getSportClass().getName());
                 assertEquals(VALID_INSTRUCTOR_NAME, (registrationDTO.getSession()).getInstructor().getUsername());
         }
@@ -102,7 +102,7 @@ public class RegistrationIntegrationTests {
                 String url = "/registration/" + this.VALID_CUSTOMER + "/" + this.VALID_SESSION + "/"
                                 + this.VALID_REGISTRATION_DATE + "/";
 
-                RegistrationDTO request = new RegistrationDTO(VALID_REGISTRATION_DATE,
+                RegistrationDTO request = new RegistrationDTO(0, VALID_REGISTRATION_DATE,
                                 new Customer(INVALID_CUSTOMER_USERNAME, VALID_CUSTOMER_EMAIL, VALID_CUSTOMER_PASSWORD),
                                 VALID_SESSION);
 
